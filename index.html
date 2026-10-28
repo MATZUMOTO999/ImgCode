@@ -2,176 +2,77 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Image to Code Converter</title>
     <link rel="stylesheet" href="style.css">
+    <script src="formato.js" defer></script>
 </head>
 <body>
-    <div class="container">
-        <h1> Image to Code Converter</h1>
+    <main class="container">
+        <h1>Image to Code Converter</h1>
         <p class="subtitle">Sube una imagen y conviértela en código puro</p>
-        
+
         <label class="upload-zone" for="fileInput">
-            <h2> Haz clic o arrastra una imagen aquí</h2>
+            <h2>Haz clic o arrastra una imagen aquí</h2>
             <p>(PNG, JPG, GIF)</p>
             <input type="file" id="fileInput" accept="image/*">
         </label>
-        
-        <div class="controls">
-            <label>
+
+        <section class="controls" aria-label="Controles de conversión">
+            <label for="resolution">
                 Resolución:
                 <input type="range" id="resolution" min="10" max="100" value="40">
                 <span id="resValue">40px</span>
             </label>
-            <button onclick="convertir()"> Convertir</button>
-            <button onclick="copiarCodigo()">Copiar código</button>
-        </div>
-        
-        <div class="preview">
+            <button type="button" id="convertButton">Convertir</button>
+            <button type="button" id="copyButton">Copiar código</button>
+            <button type="button" id="downloadButton">Descargar código</button>
+            <button type="button" data-example="corazon">Corazón</button>
+            <button type="button" data-example="estrella">Estrella</button>
+            <button type="button" class="btn-reset" id="resetButton">↺ Reiniciar</button>
+            <label for="paletaSelect">
+                Estilo ASCII:
+                <select id="paletaSelect">
+                    <option value="detallada">Detallada (@%#*)</option>
+                    <option value="simple">Simple (#=-.)</option>
+                    <option value="bloques">Bloques (█▓▒░)</option>
+                    <option value="binario">Binario (01)</option>
+                </select>
+            </label>
+            <label for="asciiSize">
+                Tamaño ASCII:
+                <input type="range" id="asciiSize" min="6" max="20" value="10">
+                <span id="sizeValue">10px</span>
+            </label>
+        </section>
+
+        <section class="preview" aria-label="Vistas previas">
+            <div class="preview-box ascii-preview-box" id="asciiPreviewBox" hidden>
+                <h3>Vista previa ASCII</h3>
+                <pre id="asciiPreview" class="ascii-preview"></pre>
+            </div>
             <div class="preview-box">
-                <h3> Imagen original (pixelada)</h3>
+                <h3>Imagen original (pixelada)</h3>
                 <canvas id="originalImage"></canvas>
             </div>
             <div class="preview-box">
-                <h3> Vista previa del código</h3>
+                <h3>Vista previa del código</h3>
                 <canvas id="pixelatedImage"></canvas>
             </div>
-        </div>
-        
-        <div class="tabs">
-            <button class="tab active" onclick="cambiarTab('html')">HTML/CSS</button>
-            <button class="tab" onclick="cambiarTab('canvas')">JavaScript Canvas</button>
-            <button class="tab" onclick="cambiarTab('ascii')">ASCII Art</button>
-        </div>
-        
-        <pre class="code-output" id="codeOutput">Sube una imagen para ver el código aquí...</pre>
-    </div>
+        </section>
 
-    <script>
-        let imageData = null;
-        let currentTab = 'html';
-        let generatedCode = '';
-        
-        const fileInput = document.getElementById('fileInput');
-        const resolution = document.getElementById('resolution');
-        const resValue = document.getElementById('resValue');
-        
-        resolution.addEventListener('input', () => {
-            resValue.textContent = resolution.value + 'px';
-        });
-        
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const img = new Image();
-                img.onload = () => procesarImagen(img);
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
-        
-        function procesarImagen(img) {
-            const size = parseInt(resolution.value);
-            const ratio = img.width / img.height;
-            const width = size;
-            const height = Math.round(size / ratio);
-            
-            // Canvas original pixelado
-            const canvasOrig = document.getElementById('originalImage');
-            canvasOrig.width = width;
-            canvasOrig.height = height;
-            canvasOrig.style.width = '300px';
-            const ctxOrig = canvasOrig.getContext('2d');
-            ctxOrig.drawImage(img, 0, 0, width, height);
-            
-            // Canvas de vista previa
-            const canvasPrev = document.getElementById('pixelatedImage');
-            canvasPrev.width = width;
-            canvasPrev.height = height;
-            canvasPrev.style.width = '300px';
-            const ctxPrev = canvasPrev.getContext('2d');
-            ctxPrev.drawImage(img, 0, 0, width, height);
-            
-            // Extraer datos de píxeles
-            imageData = ctxOrig.getImageData(0, 0, width, height);
-            convertir();
-        }
-        
-        function convertir() {
-            if (!imageData) return;
-            
-            if (currentTab === 'html') generarHTML();
-            else if (currentTab === 'canvas') generarCanvas();
-            else if (currentTab === 'ascii') generarASCII();
-            
-            document.getElementById('codeOutput').textContent = generatedCode;
-        }
-        
-        function generarHTML() {
-            const w = imageData.width;
-            const h = imageData.height;
-            let html = `<!-- Imagen generada con Image-to-Code -->\n<div class="pixel-art" style="display:grid;grid-template-columns:repeat(${w},5px);width:${w*5}px;">\n`;
-            
-            for (let i = 0; i < imageData.data.length; i += 4) {
-                const r = imageData.data[i];
-                const g = imageData.data[i+1];
-                const b = imageData.data[i+2];
-                const a = imageData.data[i+3];
-                html += `  <div style="width:5px;height:5px;background:rgba(${r},${g},${b},${(a/255).toFixed(2)})"></div>\n`;
-            }
-            html += `</div>`;
-            generatedCode = html;
-        }
-        
-        function generarCanvas() {
-            const w = imageData.width;
-            const h = imageData.height;
-            let js = `// Imagen generada con Image-to-Code\nconst canvas = document.createElement('canvas');\ncanvas.width = ${w};\ncanvas.height = ${h};\nconst ctx = canvas.getContext('2d');\nconst img = ctx.createImageData(${w}, ${h});\nconst data = [\n`;
-            
-            const pixels = [];
-            for (let i = 0; i < imageData.data.length; i += 4) {
-                pixels.push(`[${imageData.data[i]},${imageData.data[i+1]},${imageData.data[i+2]},${imageData.data[i+3]}]`);
-            }
-            js += '  ' + pixels.join(',\n  ') + '\n];\n';
-            js += `data.forEach((p, i) => {\n  img.data[i*4] = p[0];\n  img.data[i*4+1] = p[1];\n  img.data[i*4+2] = p[2];\n  img.data[i*4+3] = p[3];\n});\nctx.putImageData(img, 0, 0);\ndocument.body.appendChild(canvas);`;
-            generatedCode = js;
-        }
-        
-        function generarASCII() {
-            const w = imageData.width;
-            const h = imageData.height;
-            const chars = '@%#*+=-:. ';
-            let ascii = `/* Imagen ASCII generada con Image-to-Code */\n<pre style="font-size:8px;line-height:8px;">\n`;
-            
-            for (let y = 0; y < h; y++) {
-                for (let x = 0; x < w; x++) {
-                    const i = (y * w + x) * 4;
-                    const r = imageData.data[i];
-                    const g = imageData.data[i+1];
-                    const b = imageData.data[i+2];
-                    const brightness = (r + g + b) / 3;
-                    const charIndex = Math.floor((brightness / 255) * (chars.length - 1));
-                    ascii += chars[charIndex];
-                }
-                ascii += '\n';
-            }
-            ascii += `</pre>`;
-            generatedCode = ascii;
-        }
-        
-        function cambiarTab(tab) {
-            currentTab = tab;
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            convertir();
-        }
-        
-        function copiarCodigo() {
-            navigator.clipboard.writeText(generatedCode);
-            alert('Código copiado al portapapeles');
-        }
-    </script>
+        <section class="preview-box rendered-box">
+            <h3>Resultado renderizado</h3>
+            <canvas id="renderPreview"></canvas>
+        </section>
+
+        <div class="tabs" role="tablist" aria-label="Formato del código">
+            <button type="button" class="tab active" role="tab" aria-selected="true" data-format="html">HTML/CSS</button>
+            <button type="button" class="tab" role="tab" aria-selected="false" data-format="canvas">JavaScript Canvas</button>
+            <button type="button" class="tab" role="tab" aria-selected="false" data-format="ascii">ASCII Art</button>
+        </div>
+
+        <pre class="code-output" id="codeOutput">Sube una imagen para ver el código aquí...</pre>
+    </main>
 </body>
 </html>

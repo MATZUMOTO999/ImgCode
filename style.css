@@ -27,6 +27,7 @@ h1 { text-align: center; margin-bottom: 10px; color: #00ffcc; }
 }
 
 .upload-zone:hover { background: rgba(0, 255, 204, 0.1); }
+.upload-zone.dragging { background: rgba(0, 255, 204, 0.2); }
 .upload-zone input { display: none; }
 
 .controls {
@@ -65,10 +66,28 @@ h1 { text-align: center; margin-bottom: 10px; color: #00ffcc; }
 
 .preview-box h3 { color: #00ffcc; margin-bottom: 10px; }
 
-#originalImage, #pixelatedImage {
+#originalImage, #pixelatedImage, #renderPreview {
+    display: block;
+    width: 300px;
     max-width: 100%;
+    height: auto;
+    margin: 0 auto;
     border: 1px solid #444;
     image-rendering: pixelated;
+}
+
+.rendered-box { margin-top: 20px; }
+
+.ascii-preview-box[hidden] { display: none; }
+
+.ascii-preview {
+    overflow: auto;
+    max-height: 400px;
+    padding: 15px;
+    background: #000;
+    color: #00ff99;
+    font-family: 'Courier New', monospace;
+    white-space: pre;
 }
 
 .code-output {
@@ -99,4 +118,23 @@ h1 { text-align: center; margin-bottom: 10px; color: #00ffcc; }
 
 @media (max-width: 768px) {
     .preview { grid-template-columns: 1fr; }
+}
+
+.code-output::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.code-output::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 5px;
+}
+
+.code-output::-webkit-scrollbar-thumb {
+    background: #00ffcc;
+    border-radius: 5px;
+}
+
+.code-output::-webkit-scrollbar-thumb:hover {
+    background: #00ff99;
 }

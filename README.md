@@ -9,13 +9,13 @@ Convierte cualquier imagen en código puro. Ideal para developers que quieren in
 - Control de resolución ajustable
 - 100% client-side (no requiere servidor)
 
-## 🚀 Cómo usar
+##  Cómo usar
 1. Sube una imagen (PNG, JPG, GIF)
 2. Ajusta la resolución con el slider
 3. Elige el formato de código (HTML, Canvas, ASCII)
 4. Copia el código y úsalo en tu proyecto
 
-## 💡 Casos de uso
+##  Casos de uso
 - Crear pixel art para webs
 - Integrar imágenes pequeñas sin archivos externos
 - Generar placeholders visuales
